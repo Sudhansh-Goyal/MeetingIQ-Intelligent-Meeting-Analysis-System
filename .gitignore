@@ -1,0 +1,25 @@
+# ================= PYTHON =================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+
+# ================= DATA (IGNORE GENERATED FILES) =================
+data/audio/*
+data/transcripts/*
+data/topics/*
+data/todos/*
+
+# Keep folder structure
+!data/audio/.gitkeep
+!data/transcripts/.gitkeep
+!data/topics/.gitkeep
+!data/todos/.gitkeep
+
+# ================= MODELS (IMPORTANT) =================
+models/*.pth
+models/*.pkl
+
+
+
