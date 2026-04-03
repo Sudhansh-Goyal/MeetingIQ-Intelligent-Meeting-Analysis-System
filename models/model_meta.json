@@ -1,0 +1,7 @@
+{
+  "embed_model": "paraphrase-MiniLM-L3-v2",
+  "embed_dim": 384,
+  "hidden_dim": 128,
+  "window_size": 3,
+  "boundary_percentile": 75
+}

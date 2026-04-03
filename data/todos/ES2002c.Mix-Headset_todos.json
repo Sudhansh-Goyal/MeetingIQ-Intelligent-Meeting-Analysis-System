@@ -1,0 +1,27 @@
+[
+  {
+    "speaker": "SPEAKER_03",
+    "tasks": [
+      "Publish meeting minutes as soon as possible.",
+      "Incorporate the slogan by having the device speak it on startup/shutdown.",
+      "Make a decision on whether to incorporate a jog dial into the design."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_01",
+    "tasks": [
+      "Develop a unifying product theme (e.g., 'lemon/lime') to inspire shapes and colors.",
+      "Incorporate gimmicky lighting features (e.g., lighting up when picked up).",
+      "Ensure the product has a long-lasting battery.",
+      "Implement button backlighting."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_00",
+    "tasks": [
+      "Select a bright product color for easy identification.",
+      "Ensure extra features are hidden.",
+      "Avoid a big square block design for the control."
+    ]
+  }
+]

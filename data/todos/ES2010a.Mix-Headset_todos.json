@@ -1,0 +1,27 @@
+[
+  {
+    "speaker": "SPEAKER_00",
+    "tasks": [
+      "Lead discussion and individual work on functional design.",
+      "Lead discussion and individual work on conceptual design.",
+      "Lead detailed design process, including schematics.",
+      "Assign 'ID' to think about the working design.",
+      "Assign 'UID' to work on the technical function design.",
+      "Assign Courtney to do the user requirements specification.",
+      "Email more specific instructions for assigned tasks."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_01",
+    "tasks": [
+      "Figure out how to cover all different variances in signals.",
+      "Keep battery type and size in mind for design."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_02",
+    "tasks": [
+      "Create an insanely good instruction booklet."
+    ]
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "speaker": "SPEAKER_00",
+    "tasks": [
+      "Record attendance for the meeting.",
+      "Take notes on discussion points.",
+      "Email instructions for the next functional design stage.",
+      "Assign industrial designer to work on the actual working design.",
+      "Assign user interface to work on technical functions.",
+      "Assign marketing executive to define product requirements."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_03",
+    "tasks": [
+      "Gather background information on how the product price compares to competitors.",
+      "Prioritize combining multiple device uses into the remote control design.",
+      "Explore streamlined design options like a touchscreen.",
+      "Clarify the scope of remote control features (e.g., beyond television)."
+    ]
+  }
+]

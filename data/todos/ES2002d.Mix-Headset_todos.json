@@ -1,0 +1,28 @@
+[
+  {
+    "speaker": "SPEAKER_00",
+    "tasks": [
+      "Redraw the design incorporating the agreed-upon changes and dimensions (no LCD display, specific length/width/height, one big rubber piece with 12 functional buttons, no special button colors).",
+      "Finalize the list of advanced functions for the remote control (e.g., contrast, brightness, channel tuning, inputs, color, sharpness, sound settings)."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_02",
+    "tasks": [
+      "Update the expense sheet to reflect the decision on special colors for the case (one special color) and buttons (normal colors)."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_03",
+    "tasks": [
+      "Record and submit the design evaluation criteria."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_04",
+    "tasks": [
+      "Write the final report, incorporating the final design specifications (including dimensions, features, and cost decisions).",
+      "Ensure the logo is incorporated into the final design."
+    ]
+  }
+]

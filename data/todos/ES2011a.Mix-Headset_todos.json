@@ -1,0 +1,24 @@
+[
+  {
+    "speaker": "SPEAKER_02",
+    "tasks": [
+      "Introduce yourselves.",
+      "Draw your favorite animal to sum up its characteristics.",
+      "Reflect on remote control experiences to decide on desired features.",
+      "Come up with new ideas for the next meeting."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_00",
+    "tasks": [
+      "Decide who starts drawing the animal.",
+      "Find out the cost of a screen for the remote."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_01",
+    "tasks": [
+      "Find out what the industrial designer role's technical functions and working design entail."
+    ]
+  }
+]

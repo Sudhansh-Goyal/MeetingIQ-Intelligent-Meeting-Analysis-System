@@ -1,0 +1,31 @@
+[
+  {
+    "speaker": "SPEAKER_00",
+    "tasks": [
+      "Determine placement of the company logo on the product."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_02",
+    "tasks": [
+      "Custom design the circuit board."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_01",
+    "tasks": [
+      "Adopt a fruit and vegetable theme for the product design.",
+      "Incorporate a spongy feel into the product design.",
+      "Decide whether the fruit/vegetable theme should be printed or manifest as the actual remote shape.",
+      "Task industrial designer to research technologically innovative solutions for achieving a spongy feel.",
+      "Find the cost for the dynamo power option.",
+      "Create two prototypes and conduct user testing to determine the best option."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_03",
+    "tasks": [
+      "Research the programming required for the remote to display its menu on the TV screen."
+    ]
+  }
+]

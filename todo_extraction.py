@@ -1,210 +1,223 @@
-# import json
-# from pathlib import Path
-# from transformers import pipeline
 
-# BASE_DIR = Path(__file__).parent
-# TRANSCRIPTS_DIR = BASE_DIR / "data" / "transcripts"
-# OUTPUT_DIR = BASE_DIR / "data" / "todos"
-
-# OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-# # ================== LOAD MODEL ==================
-# print("Loading local LLM (Flan-T5)...")
-
-# generator = pipeline(
-#     "text-generation",
-#     model="google/flan-t5-base",   # good balance (can upgrade to large)
-#     device=-1  # CPU (use 0 if GPU available)
-# )
-
-# # ================== PROMPT ==================
-# def build_prompt(text):
-#     return f"""
-# Extract action items from the meeting transcript.
-
-# For each task:
-# - Identify the speaker
-# - Extract the task clearly
-
-# Return ONLY JSON like:
-# [
-#   {{"speaker": "SPEAKER_1", "task": "Do something"}}
-# ]
-
-# Transcript:
-# {text}
-# """
-
-# # ================== EXTRACT ==================
-# def extract_tasks(file_path):
-#     with open(file_path, encoding="utf-8") as f:
-#         transcript = f.read()
-
-#     prompt = build_prompt(transcript[:2000])  # limit size for stability
-
-#     result = generator(
-#         prompt,
-#         max_length=512,
-#         do_sample=False
-#     )
-
-#     output = result[0]["generated_text"]
-
-#     try:
-#         tasks = json.loads(output)
-#     except:
-#         print("Could not parse JSON. Raw output:")
-#         print(output)
-#         tasks = []
-
-#     return tasks
-
-# # ================== MAIN ==================
-# def main():
-#     files = list(TRANSCRIPTS_DIR.glob("*.txt"))
-
-#     if not files:
-#         print("No transcripts found")
-#         return
-
-#     for file in files:
-#         print(f"Processing: {file.name}")
-
-#         tasks = extract_tasks(file)
-
-#         out_path = OUTPUT_DIR / f"{file.stem}_todos.json"
-
-#         with open(out_path, "w", encoding="utf-8") as f:
-#             json.dump(tasks, f, indent=2)
-
-#         print(f"Saved: {out_path}")
-
-#     print("To-do extraction complete")
-
-# if __name__ == "__main__":
-#     main()
-
-
-import json
-import requests
 from pathlib import Path
-import os
+import re
+import pandas as pd
+import spacy
+from spacy.matcher import Matcher
+import torch
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-from dotenv import load_dotenv
-load_dotenv()
 
-GROK_API_KEY_1 = os.getenv("GROQ_KEY_1")
-GROK_API_KEY_2 = os.getenv("GROQ_KEY_2")
-
+# =========================
+# 1. PROJECT PATHS
+# =========================
 BASE_DIR = Path(__file__).parent
-TRANSCRIPTS_DIR = BASE_DIR / "data" / "transcripts"
-OUTPUT_DIR = BASE_DIR / "data" / "todos"
+DATA_DIR = BASE_DIR / "data" / "transcripts"
+OUTPUT_DIR = BASE_DIR / "output"
+MODEL_CACHE = BASE_DIR / "models"
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-# ================== CONFIG ==================
-GROK_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+MODEL_CACHE.mkdir(parents=True, exist_ok=True)
 
 
 
-MODEL_NAME = "llama-3.3-70b-versatile"   # change if needed
+print("Loading SpaCy model...")
+nlp = spacy.load("en_core_web_sm")
 
-# ================== PROMPT ==================
-def build_prompt(text):
-    return f"""
-Extract action items from the meeting transcript.
+matcher = Matcher(nlp.vocab)
+matcher.add("ACTION_PATTERNS", [
+    [{"LOWER": {"IN": ["we", "i"]}}, {"LOWER": {"IN": ["need", "have"]}}, {"LOWER": "to"}, {"POS": "VERB"}],
+    [{"LOWER": {"IN": ["we", "i"]}}, {"LOWER": {"IN": ["should", "must", "will"]}}, {"POS": "VERB"}],
+    [{"LOWER": {"IN": ["we", "i"]}}, {"LOWER": {"IN": ["'ll", "'d"]}}, {"POS": "VERB"}],
+    [{"LOWER": "let"}, {"LOWER": "'s"}, {"POS": "VERB"}],
+    [{"LOWER": "i"}, {"LOWER": {"IN": ["am", "'m"]}}, {"LOWER": "going"}, {"LOWER": "to"}, {"POS": "VERB"}]
+])
 
-For each task:
-- Identify the speaker
-- Extract the task clearly
+WEAK_WORDS = {"think", "guess", "maybe", "wonder", "probably", "if", "depends", "say", "would", "could"}
+IGNORE_VERBS = {"go", "see", "think", "talk", "say", "know", "mean", "do", "look", "be", "get", "come", "have", "want"}
 
-Return ONLY JSON like:
-[
-  {{"speaker": "SPEAKER_1", "task": "Do something"}}
-]
 
-Transcript:
-{text}
+# =========================
+# 3. LOAD FLAN-T5 MODEL
+# =========================
+print("Loading FLAN-T5 model...")
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+tokenizer = AutoTokenizer.from_pretrained(
+    "google/flan-t5-base",
+    cache_dir=MODEL_CACHE
+)
+
+model = AutoModelForSeq2SeqLM.from_pretrained(
+    "google/flan-t5-base",
+    cache_dir=MODEL_CACHE
+).to(device)
+
+print(f"Using device: {device}")
+
+
+# =========================
+# 4. HELPER FUNCTIONS
+# =========================
+def parse_transcript(path: Path):
+    pattern = r"\[(\d+\.\d+) - (\d+\.\d+)\]\s+(SPEAKER_\d+):\s+(.*)"
+    segments = []
+
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            match = re.match(pattern, line)
+            if match:
+                start, end, speaker, text = match.groups()
+                segments.append({
+                    "start": float(start),
+                    "end": float(end),
+                    "speaker": speaker,
+                    "text": text.strip()
+                })
+
+    return segments
+
+
+def is_incomplete(text):
+    return not text.strip().endswith((".", "?", "!"))
+
+
+def merge_segments(segments, max_gap=1.0):
+    if not segments:
+        return []
+
+    merged = []
+    current = segments[0]
+
+    for next_seg in segments[1:]:
+        same_speaker = current["speaker"] == next_seg["speaker"]
+        time_gap = next_seg["start"] - current["end"]
+
+        if same_speaker and time_gap <= max_gap and is_incomplete(current["text"]):
+            current["text"] += " " + next_seg["text"]
+            current["end"] = next_seg["end"]
+        else:
+            merged.append(current)
+            current = next_seg
+
+    merged.append(current)
+    return merged
+
+
+def clean_text(text):
+    text = re.sub(r"SPEAKER_\d+:", "", text)
+
+    fillers = ["okay", "alright", "so", "well", "um", "uh"]
+    for filler in fillers:
+        text = re.sub(rf"\b{filler}\b", "", text, flags=re.IGNORECASE)
+
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def is_valid_sentence(text):
+    return len(text.split()) > 4 and not text.endswith("?")
+
+
+def pre_filter_task(text):
+    doc = nlp(text)
+
+    if any(token.lower_ in WEAK_WORDS for token in doc):
+        return False
+
+    matches = matcher(doc)
+    if not matches:
+        return False
+
+    _, start, end = matches[0]
+    verb_token = doc[end - 1]
+
+    if verb_token.lemma_ in IGNORE_VERBS:
+        return False
+
+    return True
+
+
+def rewrite_with_llm(task_text, context_block):
+    prompt = f"""
+Rewrite the raw text into a short actionable to-do item.
+Replace unclear words like 'it' or 'this' using the context.
+
+Context: {context_block}
+Raw Text: {task_text}
+Task:
 """
 
-# ================== API CALL ==================
-def call_grok(api_key, prompt):
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+    inputs = tokenizer(
+        prompt,
+        return_tensors="pt",
+        truncation=True,
+        max_length=512
+    ).to(device)
 
-    payload = {
-        "model": MODEL_NAME,
-        "messages": [
-            {"role": "system", "content": "You extract tasks from transcripts."},
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": 0
-    }
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=20,
+        temperature=0.0,
+        do_sample=False
+    )
 
-    response = requests.post(GROK_API_URL, headers=headers, json=payload)
+    result = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return result.replace("Task:", "").strip().capitalize()
 
-    if response.status_code != 200:
-        raise Exception(f"API error: {response.status_code} - {response.text}")
 
-    data = response.json()
-    return data["choices"][0]["message"]["content"]
+# =========================
+# 5. MAIN PROCESSOR
+# =========================
+def process_all_files(data_dir: Path):
+    all_rows = []
 
-# ================== EXTRACT ==================
-def extract_tasks(file_path):
-    with open(file_path, encoding="utf-8") as f:
-        transcript = f.read()
+    txt_files = list(data_dir.glob("*.txt"))
 
-    prompt = build_prompt(transcript[:4000])
+    if not txt_files:
+        print("No transcript files found.")
+        return pd.DataFrame()
 
-    # Try primary API
-    try:
-        print("Trying Grok API 1...")
-        output = call_grok(GROK_API_KEY_1, prompt)
-    except Exception as e:
-        print("Primary failed:", e)
+    for file_path in txt_files:
+        print(f"Processing: {file_path.name}")
 
-        # Fallback API
-        try:
-            print("Trying Grok API 2...")
-            output = call_grok(GROK_API_KEY_2, prompt)
-        except Exception as e:
-            print("Fallback failed:", e)
-            return []
+        segments = parse_transcript(file_path)
+        merged_segments = merge_segments(segments)
 
-    # Parse JSON safely
-    try:
-        tasks = json.loads(output)
-    except:
-        print("JSON parse failed. Raw output:")
-        print(output)
-        tasks = []
+        conversation_history = []
 
-    return tasks
+        for seg in merged_segments:
+            text = clean_text(seg["text"])
+            conversation_history.append(text)
 
-# ================== MAIN ==================
-def main():
-    files = list(TRANSCRIPTS_DIR.glob("*.txt"))
+            if len(conversation_history) > 3:
+                conversation_history.pop(0)
 
-    if not files:
-        print("No transcripts found")
-        return
+            if is_valid_sentence(text) and pre_filter_task(text):
+                context_block = " ".join(conversation_history[:-1])
 
-    for file in files:
-        print(f"\nProcessing: {file.name}")
+                final_task = rewrite_with_llm(text, context_block)
 
-        tasks = extract_tasks(file)
+                all_rows.append({
+                    "file": file_path.name,
+                    "speaker": seg["speaker"],
+                    "task": final_task,
+                    "raw_text": text
+                })
 
-        out_path = OUTPUT_DIR / f"{file.stem}_todos.json"
+    return pd.DataFrame(all_rows)
 
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(tasks, f, indent=2)
 
-        print(f"Saved: {out_path}")
 
-    print("\nTo-do extraction complete")
-
-# ================== RUN ==================
 if __name__ == "__main__":
-    main()
+    print("Starting transcript processing...\n")
+
+    df_final = process_all_files(DATA_DIR)
+
+    if not df_final.empty:
+        output_file = OUTPUT_DIR / "meeting_todos_local_genai.csv"
+        df_final.to_csv(output_file, index=False)
+        print(f"\nSaved output to: {output_file}")
+        print(df_final.head(10))
+    else:
+        print("No tasks extracted.")

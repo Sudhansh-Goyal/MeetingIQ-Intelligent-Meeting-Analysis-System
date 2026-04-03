@@ -1,0 +1,17 @@
+[
+  {
+    "speaker": "SPEAKER_00",
+    "tasks": [
+      "Upload meeting minutes to the shared documents folder (including future ones).",
+      "Ensure everyone finishes their questionnaire.",
+      "Instruct everyone to think about discussed topics and bring ideas to the next meeting."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_01",
+    "tasks": [
+      "Research appropriate remote size.",
+      "Clarify new project requirements on TV-only use vs. DVD compatibility and update the team."
+    ]
+  }
+]

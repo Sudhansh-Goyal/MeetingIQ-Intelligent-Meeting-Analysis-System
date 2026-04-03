@@ -1,0 +1,31 @@
+[
+  {
+    "speaker": "SPEAKER_01",
+    "tasks": [
+      "Keep minutes as project manager.",
+      "Assign ID (SPEAKER_00) to do look and feel design.",
+      "Assign UID (SPEAKER_03) to do user interface design and have final say on buttons.",
+      "Assign SPEAKER_02 to do product evaluation.",
+      "Assign ID (SPEAKER_00) and UID (SPEAKER_03) to create a prototype using modeling clay together."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_03",
+    "tasks": [
+      "Look into using the iPod-like interface idea for a remote control."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_00",
+    "tasks": [
+      "Ensure scroll buttons on the side are clearly labeled."
+    ]
+  },
+  {
+    "speaker": "SPEAKER_02",
+    "tasks": [
+      "Revisit the lithium battery decision next week.",
+      "Ensure the logo remains visible when latex covers are applied (e.g., via cutout)."
+    ]
+  }
+]

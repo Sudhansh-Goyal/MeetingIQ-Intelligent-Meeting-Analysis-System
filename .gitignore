@@ -9,7 +9,7 @@ __pycache__/
 data/audio/*
 data/transcripts/*
 data/topics/*
-data/todos/*
+
 
 # Keep folder structure
 !data/audio/.gitkeep
