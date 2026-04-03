@@ -54,6 +54,10 @@ Audio → Whisper → Pyannote → Transcript
 
 ---
 
+## Pipeline
+Transcription → Train model → Topic segmentation → To-do extraction → Run API uvicorn api
+
+---
 ## ⚙️ Installation
 
 ```bash
@@ -61,6 +65,16 @@ git clone https://github.com/Sudhansh-Goyal/Meeting_ai.git
 cd Meeting_ai
 
 pip install -r requirements.txt
+
+python transcription.py
+
+python train_bilstm.py
+
+python topic_segmentation.py
+
+extraction python todo_extraction.py
+
+app --host 0.0.0.0 --port 8000
 ```
 
 ---
