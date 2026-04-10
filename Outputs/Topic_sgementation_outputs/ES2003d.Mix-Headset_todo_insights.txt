@@ -1,0 +1,37 @@
+Meeting AI To-Do XAI Report: ES2003d.Mix-Headset
+==================================================
+
+Total Tasks Identified: 8
+
+Task 1: Basic point, have a list of criteria that we need to rate the prototype by.
+  Source: 'Basic point, have a list of criteria that we need to rate the prototype by.'
+  XAI Insight: Accepted
+--------------------
+Task 2: But what's something we need to decide on is how we're going to go from here
+  Source: 'But what's something we need to decide on is how we're going to go from here.'
+  XAI Insight: Accepted
+--------------------
+Task 3: I'm very much open to suggestions of where we go but because we need to shed what was
+  Source: 'I'm very much open to suggestions of where we go but because we need to shed what was 4 euros off of the price of what we really desired.'
+  XAI Insight: Accepted
+--------------------
+Task 4: We'll leave that one for now.
+  Source: 'we'll leave that one for now.'
+  XAI Insight: Accepted
+--------------------
+Task 5: I'd give it a six.
+  Source: 'I'd give it a six.'
+  XAI Insight: Accepted
+--------------------
+Task 6: Give it a six.
+  Source: 'Let's give it a six.'
+  XAI Insight: Accepted
+--------------------
+Task 7: I'd rate this very highly.
+  Source: 'I'd rate this very highly.'
+  XAI Insight: Accepted
+--------------------
+Task 8: Quickly we'll pop on to project evaluation.
+  Source: 'Quickly we'll pop on to project evaluation.'
+  XAI Insight: Accepted
+--------------------
